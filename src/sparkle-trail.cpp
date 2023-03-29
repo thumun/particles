@@ -47,13 +47,42 @@ public:
 
   void updateConfetti()
   {
+    // I want this to happen every 0.3 seconds 
+    sceneParticles.push_back(mParticles[0]);
+    mParticles.erase(mParticles.begin());
+
+    // initialized to be same start pos as the rotating particle 
+    sceneParticles[sceneParticles.size()-1].pos = position; 
+
+    for (int i = 0; i < sceneParticles.size()-2; i++){
+      Particle particle = sceneParticles[i];
+      // hopefully it shoots off in a straight line (?)
+      particle.pos = particle.pos + dt() * particle.vel;
+      // lowers the transparency based on time 
+      particle.color.w = fmaxf(0, particle.color.w-0.003);
+
+      // if transparency is 0 then delete particle from scene 
+      // put back in mParticles for reusing 
+      deadParticles.push_back(i);
+    }
+
+    if (deadParticles.size() != 0){
+      for (int i: deadParticles){
+        mParticles.push_back(sceneParticles[i]);
+        sceneParticles.erase(sceneParticles.begin() + i);
+      }
+    }
+    
+    deadParticles.clear();
+
     // mParticles[0].pos = position;
     // mParticles[0].pos = vec3(cos(test-dt()), sin(test-dt()), mParticles[0].pos.z);
-    mParticles[0].pos = mParticles[0].pos + dt() * mParticles[0].vel; 
-    float transparency = fmaxf(0, mParticles[0].color.w-0.003);
-    mParticles[0].color.w = transparency;
-    // cout << mParticles[0].pos << endl; 
-    cout << mParticles[0].color.w << endl;
+
+    // old code (for one particle): 
+    // mParticles[0].pos = mParticles[0].pos + dt() * mParticles[0].vel; 
+    // float transparency = fmaxf(0, mParticles[0].color.w-0.003);
+    // mParticles[0].color.w = transparency;
+    // cout << mParticles[0].color.w << endl;
 
     // for (int i = 0; i < mParticles.size(); i++){
     //   Particle particle = mParticles[i];
@@ -71,7 +100,17 @@ public:
   void drawConfetti()
   {
     renderer.texture("image", "particle");
-    renderer.sprite(mParticles[0].pos, mParticles[0].color, mParticles[0].size, mParticles[0].rot);
+
+    // is this gonna throw an error if sceneParticles is empty 
+
+    if (sceneParticles.size() != 0){
+      for (Particle particle : sceneParticles){
+        renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
+      }
+    }
+    
+
+    // renderer.sprite(mParticles[0].pos, mParticles[0].color, mParticles[0].size, mParticles[0].rot);
 
     // for (int i = 0; i < mParticles.size(); i++)
     // {
@@ -121,6 +160,10 @@ protected:
   float test = 0.1; // for changing theta of circle  
 
   std::vector<Particle> mParticles;
+
+  // particles in the scene 
+  std::vector<Particle> sceneParticles; 
+  vector<int> deadParticles; // not efficient 
 };
 
 int main(int argc, char** argv)
