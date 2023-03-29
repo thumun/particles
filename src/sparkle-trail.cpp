@@ -59,7 +59,7 @@ public:
 
     // cout << "made it here" << endl; 
     // cout << sceneParticles.size() << endl; 
-
+ 
     if (sceneParticles.size() > 1){
       for (int i = 0; i < sceneParticles.size()-2; i++){
         Particle particle = sceneParticles[i];
