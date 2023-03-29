@@ -48,8 +48,12 @@ public:
   void updateConfetti()
   {
     // mParticles[0].pos = position;
-    mParticles[0].pos = vec3(cos(test-dt()), sin(test-dt()), mParticles[0].pos.z);
-    cout << mParticles[0].pos << endl; 
+    // mParticles[0].pos = vec3(cos(test-dt()), sin(test-dt()), mParticles[0].pos.z);
+    mParticles[0].pos = mParticles[0].pos + dt() * mParticles[0].vel; 
+    float transparency = fmaxf(0, mParticles[0].color.w-0.003);
+    mParticles[0].color.w = transparency;
+    // cout << mParticles[0].pos << endl; 
+    cout << mParticles[0].color.w << endl;
 
     // for (int i = 0; i < mParticles.size(); i++){
     //   Particle particle = mParticles[i];
