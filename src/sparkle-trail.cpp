@@ -47,16 +47,33 @@ public:
 
   void updateConfetti()
   {
+    // mParticles[0].pos = position;
+    mParticles[0].pos = vec3(cos(test-dt()), sin(test-dt()), mParticles[0].pos.z);
+    cout << mParticles[0].pos << endl; 
+
+    // for (int i = 0; i < mParticles.size(); i++){
+    //   Particle particle = mParticles[i];
+
+    //   if (i == 0){
+    //     particle.pos = position; 
+    //   } else { 
+    //     particle.pos = mParticles[i-1].pos; 
+    //   }
+    //   // particle.pos = particle.pos+dt()*particle.vel; 
+    // }
+
   }
 
   void drawConfetti()
   {
     renderer.texture("image", "particle");
-    for (int i = 0; i < mParticles.size(); i++)
-    {
-      Particle particle = mParticles[i];
-      renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
-    }
+    renderer.sprite(mParticles[0].pos, mParticles[0].color, mParticles[0].size, mParticles[0].rot);
+
+    // for (int i = 0; i < mParticles.size(); i++)
+    // {
+    //   Particle particle = mParticles[i];
+    //   renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
+    // }
   }
 
   void mouseMotion(int x, int y, int dx, int dy) {
@@ -82,6 +99,8 @@ public:
     renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
 
     renderer.lookAt(eyePos, lookPos, up);
+    position = vec3(cos(test), sin(test), position.z);
+    test = test+0.01; 
     renderer.sprite(position, vec4(1.0f), 0.25f);
     updateConfetti();
     drawConfetti();
@@ -94,6 +113,8 @@ protected:
   vec3 lookPos = vec3(0, 0, 0);
   vec3 up = vec3(0, 1, 0);
   vec3 position = vec3(1, 0, 0);
+
+  float test = 0.1; // for changing theta of circle  
 
   std::vector<Particle> mParticles;
 };
