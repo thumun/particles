@@ -46,7 +46,22 @@ public:
     renderer.texture("image", "explosion");
 
     // 30 fps => each frame 1/30 long, e.g. when time = 1s, we play frame 30
-    frame = 0;
+    // frame = floor(prevFrame + dt()/10 * 30); // maybe change 30 
+    // frame = frame % numRows*numCols;
+
+    // frame += 1; 
+    // prevFrame += 1; 
+
+    // if (frame > 16){
+    //   frame = 0; 
+    // }
+    // if (prevFrame > 16){
+    //   prevFrame = 0; 
+    // }
+
+    frame = floor(elapsedTime()*30);
+    frame = frame % numRows*numCols;
+
     renderer.setUniform("Frame", frame);
     renderer.setUniform("Rows", numRows);
     renderer.setUniform("Cols", numCols);
@@ -66,6 +81,7 @@ protected:
   vec3 lookPos = vec3(0, 0, 0);
   vec3 up = vec3(0, 1, 0);
   int frame = 0;
+  int prevFrame = 0; 
   int numRows = 8;
   int numCols = 8;
 };

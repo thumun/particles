@@ -110,6 +110,10 @@ public:
     renderer.push();
     renderer.translate(vec3(-0.5, -0.5, 0));
     renderer.quad(); // vertices span from (0,0,0) to (1,1,0)
+    // adding rotations and scales here so it faces the camera 
+    vec3 n = normalize(camPos-lookPos);
+    theta = atan2(n.z, n.x);
+    renderer.rotate(theta, vec3(0, 1, 0));
     renderer.pop();
 
     renderer.endShader();
@@ -125,6 +129,7 @@ protected:
   float azimuth = 0; 
   float elevation = 0; 
   float radius = 10.0f;  
+  float theta = 0; 
 };
 
 int main(int argc, char** argv)
