@@ -55,6 +55,7 @@ public:
       // cout << mParticles.size() << endl; 
       // initialized to be same start pos as the rotating particle 
       sceneParticles[sceneParticles.size()-1].pos = position; 
+      sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);; 
     }
 
     // cout << "made it here" << endl; 
@@ -66,7 +67,7 @@ public:
         // hopefully it shoots off in a straight line (?)
         particle->pos = particle->pos + dt() * particle->vel;
         // lowers the transparency based on time 
-        particle->color.w = fmaxf(0, particle->color.w-0.001);
+        particle->color.w = fmaxf(0, particle->color.w-0.01);
         cout << i << "; " << particle->color.w << endl; 
 
         // PROBLEM: all of the things above do not update actual values ?
