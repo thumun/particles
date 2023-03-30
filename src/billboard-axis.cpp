@@ -108,12 +108,12 @@ public:
     // draw tree
     renderer.texture("Image", "tree");
     renderer.push();
-    renderer.translate(vec3(-0.5, -0.5, 0));
-    renderer.quad(); // vertices span from (0,0,0) to (1,1,0)
-    // adding rotations and scales here so it faces the camera 
-    vec3 n = normalize(camPos-lookPos);
+     // adding rotations and scales here so it faces the camera 
+    vec3 n = normalize(eyePos-lookPos);
     theta = atan2(n.z, n.x);
     renderer.rotate(theta, vec3(0, 1, 0));
+    renderer.translate(vec3(-0.5, -0.5, 0));
+    renderer.quad(); // vertices span from (0,0,0) to (1,1,0)
     renderer.pop();
 
     renderer.endShader();

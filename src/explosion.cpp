@@ -49,22 +49,19 @@ public:
     // frame = floor(prevFrame + dt()/10 * 30); // maybe change 30 
     // frame = frame % numRows*numCols;
 
-    // frame += 1; 
-    // prevFrame += 1; 
-
-    // if (frame > 16){
-    //   frame = 0; 
-    // }
-    // if (prevFrame > 16){
-    //   prevFrame = 0; 
-    // }
-
     frame = floor(elapsedTime()*30);
-    frame = frame % numRows*numCols;
+    // cout << frame << endl;
+    // frame = int(frame);
+    frame = frame % (numRows*numCols);
+
+    row = int(frame/numCols); 
+    col = frame%numCols; 
 
     renderer.setUniform("Frame", frame);
     renderer.setUniform("Rows", numRows);
     renderer.setUniform("Cols", numCols);
+    renderer.setUniform("CurrRow", row);
+    renderer.setUniform("CurrCol", col);
 
     float aspect = ((float)width()) / height();
     renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
@@ -84,6 +81,8 @@ protected:
   int prevFrame = 0; 
   int numRows = 8;
   int numCols = 8;
+  int row = 0;
+  int col = 0;
 };
 
 int main(int argc, char** argv)
