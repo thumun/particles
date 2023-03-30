@@ -50,16 +50,13 @@ public:
     // I want this to happen every so often 
     if (time % 3 == 0){
       sceneParticles.push_back(mParticles[0]);
-      // cout << mParticles.size() << endl; 
       mParticles.erase(mParticles.begin());
-      // cout << mParticles.size() << endl; 
       // initialized to be same start pos as the rotating particle 
       sceneParticles[sceneParticles.size()-1].pos = position; 
-      sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);; 
+      // resetting to orig values 
+      sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
+      sceneParticles[sceneParticles.size()-1].rot = 0.0;
     }
-
-    // cout << "made it here" << endl; 
-    // cout << sceneParticles.size() << endl; 
  
     if (sceneParticles.size() > 1){
       for (int i = 0; i < sceneParticles.size()-2; i++){
@@ -67,12 +64,10 @@ public:
         // hopefully it shoots off in a straight line (?)
         particle->pos = particle->pos + dt() * particle->vel;
         // lowers the transparency based on time 
-        particle->color.w = fmaxf(0, particle->color.w-0.01);
-        cout << i << "; " << particle->color.w << endl; 
+        particle->color.w = fmaxf(0, particle->color.w-0.005);
 
-        // PROBLEM: all of the things above do not update actual values ?
-        // like transparency is stuck at 0.9 
-        // i imagine the positions are the same way 
+        // change the rotation slightly 
+        particle->rot = particle->rot + 0.01; 
 
         // if transparency is 0 then delete particle from scene 
         // put back in mParticles for reusing
@@ -82,8 +77,6 @@ public:
       }
     }
     
-    // cout << "second checker" << endl; 
-
     if (deadParticles.size() != 0){
       for (int i: deadParticles){
         mParticles.push_back(sceneParticles[i]);
@@ -93,30 +86,7 @@ public:
       deadParticles.clear();
     }
 
-    // cout << "end" << endl; 
-
     time+=1; 
-    
-
-    // mParticles[0].pos = position;
-    // mParticles[0].pos = vec3(cos(test-dt()), sin(test-dt()), mParticles[0].pos.z);
-
-    // old code (for one particle): 
-    // mParticles[0].pos = mParticles[0].pos + dt() * mParticles[0].vel; 
-    // float transparency = fmaxf(0, mParticles[0].color.w-0.003);
-    // mParticles[0].color.w = transparency;
-    // cout << mParticles[0].color.w << endl;
-
-    // for (int i = 0; i < mParticles.size(); i++){
-    //   Particle particle = mParticles[i];
-
-    //   if (i == 0){
-    //     particle.pos = position; 
-    //   } else { 
-    //     particle.pos = mParticles[i-1].pos; 
-    //   }
-    //   // particle.pos = particle.pos+dt()*particle.vel; 
-    // }
 
   }
 
@@ -124,21 +94,12 @@ public:
   {
     renderer.texture("image", "particle");
 
-    // is this gonna throw an error if sceneParticles is empty 
-
     if (sceneParticles.size() != 0){
       for (Particle particle : sceneParticles){
         renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
       }
     }
 
-    // renderer.sprite(mParticles[0].pos, mParticles[0].color, mParticles[0].size, mParticles[0].rot);
-
-    // for (int i = 0; i < mParticles.size(); i++)
-    // {
-    //   Particle particle = mParticles[i];
-    //   renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
-    // }
   }
 
   void mouseMotion(int x, int y, int dx, int dy) {
@@ -182,11 +143,14 @@ protected:
   float theta = 0.1; // for changing theta of circle  
   int time = 0; 
 
+  // partilcles not in the scene 
   std::vector<Particle> mParticles;
 
   // particles in the scene 
   std::vector<Particle> sceneParticles; 
-  vector<int> deadParticles; // not efficient 
+  // indicies of particles in scene that are dead - to be moved to mParticles
+  // in update 
+  vector<int> deadParticles; 
 };
 
 int main(int argc, char** argv)
