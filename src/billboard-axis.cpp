@@ -24,8 +24,8 @@ public:
     Image img;
     img.load("../textures/tree.png", true);
     renderer.loadTexture("tree", img, 0);
-    // TODO: Use the width and the height of the image to scale the billboard
-
+    imgRatio =  float(img.height())/float(img.width());
+    cout << imgRatio << endl;
     renderer.loadTexture("grass", "../textures/grass.png", 0);
     renderer.blendMode(agl::BLEND);
   }
@@ -101,6 +101,7 @@ public:
     renderer.texture("Image", "grass");
     renderer.push();
     renderer.translate(vec3(0.0, -0.5, 0));
+    // renderer.scale(vec3(2.0f));
     renderer.scale(vec3(2.0f));
     renderer.plane();
     renderer.pop();
@@ -113,6 +114,7 @@ public:
     theta = atan2(n.x, n.z);
     renderer.rotate(theta, vec3(0, 1, 0));
     renderer.translate(vec3(-0.5, -0.5, 0));
+    renderer.scale(vec3(1, imgRatio, 1));
     renderer.quad(); // vertices span from (0,0,0) to (1,1,0)
     renderer.pop();
 
@@ -130,6 +132,7 @@ protected:
   float elevation = 0; 
   float radius = 10.0f;  
   float theta = 0; 
+  float imgRatio = 0; 
 };
 
 int main(int argc, char** argv)
