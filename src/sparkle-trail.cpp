@@ -62,12 +62,12 @@ public:
  
     if (sceneParticles.size() > 1){
       for (int i = 0; i < sceneParticles.size()-2; i++){
-        Particle particle = sceneParticles[i];
+        Particle* particle = &sceneParticles[i];
         // hopefully it shoots off in a straight line (?)
-        particle.pos = particle.pos + dt() * particle.vel;
+        particle->pos = particle->pos + dt() * particle->vel;
         // lowers the transparency based on time 
-        particle.color.w = fmaxf(0, particle.color.w-0.1);
-        cout << i << ": " << particle.color.w << endl; 
+        particle->color.w = fmaxf(0, particle->color.w-0.001);
+        cout << i << "; " << particle->color.w << endl; 
 
         // PROBLEM: all of the things above do not update actual values ?
         // like transparency is stuck at 0.9 
@@ -75,7 +75,7 @@ public:
 
         // if transparency is 0 then delete particle from scene 
         // put back in mParticles for reusing
-        if (particle.color.w == 0){
+        if (particle->color.w <= 0){
           deadParticles.push_back(i);
         } 
       }
