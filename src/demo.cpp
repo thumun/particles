@@ -72,8 +72,6 @@ public:
       // sceneParticles[sceneParticles.size()-1].pos = position; 
       sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
     }
-
-    cout << "added" << endl;
  
     if (sceneParticles.size() != 0){
       for (int i = 0; i < sceneParticles.size(); i++){
@@ -81,7 +79,10 @@ public:
         Particle* particle = &sceneParticles[i];
         vec3 newAcceleration = vec3(acceleration.x, 0.5*acceleration.y*pow(elapsedTime(),2), acceleration.z);
         particle->pos = newAcceleration + particle->pos + elapsedTime() * particle->vel;
-        particle->vel = particle->vel + acceleration*elapsedTime();
+        // particle->vel = particle->vel + acceleration*elapsedTime();
+
+        particle->color.w = fmaxf(0, particle->color.w-0.1);
+
 
         if (pow(particle->vel.x,2)+ pow(particle->vel.y,2) + pow(particle->vel.z,2) < 0.05){
           particle->color.w = 0;
