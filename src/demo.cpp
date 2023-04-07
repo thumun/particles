@@ -27,7 +27,7 @@ public:
 
   void setup() {
     setWindowSize(1000, 1000);
-    createConfetti(50);
+    createConfetti(100);
     renderer.setDepthTest(false);
     renderer.blendMode(agl::ADD);
   }
@@ -47,7 +47,7 @@ public:
       // cout << particle.pos << endl;
       // make gravity 0 to see if moving correctly 
       // particle.vel = agl::randomUnitCube();
-      particle.vel = vec3(0.1, 0.5, 0);
+      particle.vel = vec3(agl::random(0.1,0.9), agl::random(0.1,0.9), 0);
       mParticles.push_back(particle);
     }
   }
@@ -74,13 +74,14 @@ public:
       if (mParticles.size() != 0){
         sceneParticles.push_back(mParticles[0]);
         mParticles.erase(mParticles.begin());
+
+        float randVal = agl::random(-1.5,1.5);
+        sceneParticles[sceneParticles.size()-1].pos = vec3(randVal, -1.6, 0);
+        sceneParticles[sceneParticles.size()-1].vel = vec3(agl::random(0.1,0.9), agl::random(0.1,0.9), 0);
         sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
 
       }
       
-      // initialized to be same start pos as the rotating particle 
-      // how to make them start under screen
-      // sceneParticles[sceneParticles.size()-1].pos = position; 
     }
  
     if (sceneParticles.size() != 0){
@@ -88,28 +89,21 @@ public:
 
         Particle* particle = &sceneParticles[i];
 
-
-        // vec3 newAcceleration = vec3(acceleration.x, 0.5*acceleration.y*pow(elapsedTime(),2), acceleration.z);
         particle->pos = particle->pos + dt() * particle->vel;
         particle->vel = particle->vel + acceleration*dt();
 
-        // cout << particle->pos << endl;
-        // particle->color.w = fmaxf(0, particle->color.w-0.001);
-
 
         if (pow(particle->vel.x,2)+ pow(particle->vel.y,2) + pow(particle->vel.z,2) < 0.05){
-          //particle->color.w = 0;
           deadParticles.push_back(i);
         }
 
-        // if (particle->color.w <= 0){
-        //   deadParticles.push_back(i);
-        // } 
+
       }
     }
 
     if (deadParticles.size() != 0){
       for (int i: deadParticles){
+
         mParticles.push_back(sceneParticles[i]);
         sceneParticles.erase(sceneParticles.begin() + i);
       }
