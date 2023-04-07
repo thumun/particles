@@ -27,7 +27,7 @@ public:
 
   void setup() {
     setWindowSize(1000, 1000);
-    createConfetti(5);
+    createConfetti(50);
     renderer.setDepthTest(false);
     renderer.blendMode(agl::ADD);
   }
@@ -40,8 +40,14 @@ public:
       Particle particle;
       particle.color = vec4(agl::randomUnitCube(), 1);
       particle.size = 0.25;
-      particle.pos = agl::randomUnitCube();
-      particle.vel = agl::randomUnitCube();
+      // particle.pos = agl::randomUnitCube();
+      float randVal = agl::random(-1.5,1.5);
+      particle.pos = vec3(randVal, -1.6, 0);
+      // print start pos 
+      // cout << particle.pos << endl;
+      // make gravity 0 to see if moving correctly 
+      // particle.vel = agl::randomUnitCube();
+      particle.vel = vec3(0.1, 0.5, 0);
       mParticles.push_back(particle);
     }
   }
@@ -65,32 +71,40 @@ public:
   void updateConfetti()
   {   
     if (time % 7 == 0){
-      sceneParticles.push_back(mParticles[0]);
-      mParticles.erase(mParticles.begin());
+      if (mParticles.size() != 0){
+        sceneParticles.push_back(mParticles[0]);
+        mParticles.erase(mParticles.begin());
+        sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
+
+      }
+      
       // initialized to be same start pos as the rotating particle 
       // how to make them start under screen
       // sceneParticles[sceneParticles.size()-1].pos = position; 
-      sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
     }
  
     if (sceneParticles.size() != 0){
       for (int i = 0; i < sceneParticles.size(); i++){
 
         Particle* particle = &sceneParticles[i];
-        vec3 newAcceleration = vec3(acceleration.x, 0.5*acceleration.y*pow(elapsedTime(),2), acceleration.z);
-        particle->pos = newAcceleration + particle->pos + elapsedTime() * particle->vel;
-        // particle->vel = particle->vel + acceleration*elapsedTime();
 
-        particle->color.w = fmaxf(0, particle->color.w-0.1);
+
+        // vec3 newAcceleration = vec3(acceleration.x, 0.5*acceleration.y*pow(elapsedTime(),2), acceleration.z);
+        particle->pos = particle->pos + dt() * particle->vel;
+        particle->vel = particle->vel + acceleration*dt();
+
+        // cout << particle->pos << endl;
+        // particle->color.w = fmaxf(0, particle->color.w-0.001);
 
 
         if (pow(particle->vel.x,2)+ pow(particle->vel.y,2) + pow(particle->vel.z,2) < 0.05){
-          particle->color.w = 0;
+          //particle->color.w = 0;
+          deadParticles.push_back(i);
         }
 
-        if (particle->color.w <= 0){
-          deadParticles.push_back(i);
-        } 
+        // if (particle->color.w <= 0){
+        //   deadParticles.push_back(i);
+        // } 
       }
     }
 
@@ -160,7 +174,7 @@ protected:
   float theta = 0.1; // for changing theta of circle  
   int time = 0; 
 
-  vec3 acceleration = vec3(1,-9.8,1); // gravity 
+  vec3 acceleration = vec3(0,-0.1,0); // gravity 
 
   // partilcles not in the scene 
   std::vector<Particle> mParticles;
