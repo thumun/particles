@@ -18,6 +18,7 @@ struct Particle {
   glm::vec3 vel;
   glm::vec4 color;
   float size;
+  bool isEnabled; 
 };
 
 class Viewer : public Window {
@@ -34,7 +35,7 @@ public:
 
   void createConfetti(int size)
   {
-    renderer.loadTexture("particle", "../textures/star4.png", 0);
+    renderer.loadTexture("particle", "../textures/circle.png", 0);
     for (int i = 0; i < size; i++)
     {
       Particle particle;
@@ -47,71 +48,61 @@ public:
       // cout << particle.pos << endl;
       // make gravity 0 to see if moving correctly 
       // particle.vel = agl::randomUnitCube();
-      particle.vel = vec3(agl::random(0.1,0.9), agl::random(0.1,0.9), 0);
+      particle.vel = vec3(0.1, agl::random(0.3,0.9), 0);
+      particle.isEnabled = false;
       mParticles.push_back(particle);
     }
   }
 
-  void createTrail(){
+  // void createTrail(){
 
-    trailingParticles.clear();
+  //   trailingParticles.clear();
 
-    for (int i = 0; i < sceneParticles.size(); i++){
-      Particle p1;
-      p1.color = sceneParticles[i].color;
-      p1.size = sceneParticles[i].size;
-      p1.pos = sceneParticles[i].pos; // need to change slightly
-      p1.vel = sceneParticles[i].vel;
+  //   for (int i = 0; i < sceneParticles.size(); i++){
+  //     Particle p1;
+  //     p1.color = sceneParticles[i].color;
+  //     p1.size = sceneParticles[i].size;
+  //     p1.pos = sceneParticles[i].pos; // need to change slightly
+  //     p1.vel = sceneParticles[i].vel;
 
-      trailingParticles.push_back(p1); // need to make more
-    }
-  }
+  //     trailingParticles.push_back(p1); // need to make more
+  //   }
+  // }
 
   // testing initial firework -> no trail; just logic 
   void updateConfetti()
   {   
-    if (time % 7 == 0){
-      if (mParticles.size() != 0){
-        sceneParticles.push_back(mParticles[0]);
-        mParticles.erase(mParticles.begin());
+    for (Particle &particle:mParticles){
+      if (particle.isEnabled){
+        particle.pos = particle.pos + dt() * particle.vel;
+        particle.vel = particle.vel + acceleration*dt();
 
-        float randVal = agl::random(-1.5,1.5);
-        sceneParticles[sceneParticles.size()-1].pos = vec3(randVal, -1.6, 0);
-        sceneParticles[sceneParticles.size()-1].vel = vec3(agl::random(0.1,0.9), agl::random(0.1,0.9), 0);
-        sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
-
-      }
-      
-    }
- 
-    if (sceneParticles.size() != 0){
-      for (int i = 0; i < sceneParticles.size(); i++){
-
-        Particle* particle = &sceneParticles[i];
-
-        particle->pos = particle->pos + dt() * particle->vel;
-        particle->vel = particle->vel + acceleration*dt();
-
-
-        if (pow(particle->vel.x,2)+ pow(particle->vel.y,2) + pow(particle->vel.z,2) < 0.05){
-          deadParticles.push_back(i);
+        if (pow(particle.vel.x,2)+ pow(particle.vel.y,2) + pow(particle.vel.z,2) < 0.05){
+          particle.isEnabled = false; 
+          cout << "particle false: " << particle.isEnabled << endl;
         }
-
-
       }
     }
 
-    if (deadParticles.size() != 0){
-      for (int i: deadParticles){
-
-        mParticles.push_back(sceneParticles[i]);
-        sceneParticles.erase(sceneParticles.begin() + i);
+    if (time % 7 == 0){
+      bool isDone = false;
+      for (Particle &i: mParticles){
+        if(isDone){
+          break;
+        }
+        else if (!i.isEnabled){
+          float randVal = agl::random(-1.5,1.5);
+          i.pos = vec3(randVal, -1.6, 0);
+          i.vel = vec3(0.1, agl::random(0.3,0.9), 0);
+          i.color = vec4(agl::randomUnitCube(), 1);
+          i.isEnabled = true;
+          cout << "particle true: " <<  i.isEnabled << endl;
+          isDone = true; 
+        }
       }
-
-      deadParticles.clear();
     }
 
-    time+=1; 
+    time += 1; 
 
   }
 
@@ -119,12 +110,13 @@ public:
   {
     renderer.texture("image", "particle");
 
-    if (sceneParticles.size() != 0){
-      for (Particle particle : sceneParticles){
-        renderer.sprite(particle.pos, particle.color, particle.size);
+    if (mParticles.size() != 0){
+      for (Particle particle : mParticles){
+        if (particle.isEnabled){
+          renderer.sprite(particle.pos, particle.color, particle.size);
+        }
       }
     }
-
   }
 
   void mouseMotion(int x, int y, int dx, int dy) {
@@ -150,9 +142,7 @@ public:
     renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
 
     renderer.lookAt(eyePos, lookPos, up);
-    // position = vec3(cos(theta), sin(theta), position.z);
-    // theta = theta+0.01; 
-    // renderer.sprite(position, vec4(1.0f), 0.25f);
+
     updateConfetti();
     drawFireworks();
     renderer.endShader();
@@ -165,22 +155,14 @@ protected:
   vec3 up = vec3(0, 1, 0);
   vec3 position = vec3(1, 0, 0);
 
-  float theta = 0.1; // for changing theta of circle  
   int time = 0; 
 
   vec3 acceleration = vec3(0,-0.1,0); // gravity 
 
-  // partilcles not in the scene 
   std::vector<Particle> mParticles;
-
-  // particles in the scene 
-  std::vector<Particle> sceneParticles; 
-  // indicies of particles in scene that are dead - to be moved to mParticles
-  // in update 
 
   std::vector<Particle> trailingParticles; 
 
-  vector<int> deadParticles; 
 };
 
 int main(int argc, char** argv)
