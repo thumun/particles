@@ -2,7 +2,7 @@
 
 Implements particle demos
 
-TODO: Add a representative image for your project here
+![firework](https://github.com/thumun/particles/blob/main/img/firework.png)
 
 ## How to build
 
@@ -49,9 +49,16 @@ particles/build $ ../bin/explosion
 
 ## Demo of basic features
 
-TODO: Document the main demos your viewer (shaders + models)
+Sparkle-Trail:
+![sparkle trail](https://github.com/thumun/particles/blob/main/img/particles.gif)
+
+Explosion:
+![explosion](https://github.com/thumun/particles/blob/main/img/explosion.gif)
+
+Billboard-axis:
+![billboard](https://github.com/thumun/particles/blob/main/img/billboard.gif)
 
 ## Unique features 
 
-TODO: Show the unique features you made
-
+Firework: 
+![firework](https://github.com/thumun/particles/blob/main/img/particles.gif)
