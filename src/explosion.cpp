@@ -1,6 +1,14 @@
 // Bryn Mawr College, alinen, 2020
 //
 
+//--------------------------------------------------
+// Authors: Aline Normoyle, Neha Thumu
+// Date: 4/7/23
+// Description:
+// Creating a frame-by-frame explosion (30 fps)
+// [Using code from Aline as a base]
+//--------------------------------------------------
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -54,6 +62,7 @@ public:
     // frame = int(frame);
     frame = frame % (numRows*numCols);
 
+    // logic for getting row & col from the spritesheet 
     row = int(frame/numCols); 
     col = frame%numCols; 
 

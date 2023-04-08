@@ -1,6 +1,15 @@
 // Bryn Mawr College, alinen, 2020
 //
 
+//--------------------------------------------------
+// Authors: Aline Normoyle, Neha Thumu
+// Date: 4/7/23
+// Description:
+// Creating a tree that always faces the camera 
+// (billboard axis)
+// [Using code from Aline as a base]
+//--------------------------------------------------
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -24,12 +33,14 @@ public:
     Image img;
     img.load("../textures/tree.png", true);
     renderer.loadTexture("tree", img, 0);
+    // getting imgRatio to make sure tree is scaled properly
     imgRatio =  float(img.height())/float(img.width());
     cout << imgRatio << endl;
     renderer.loadTexture("grass", "../textures/grass.png", 0);
     renderer.blendMode(agl::BLEND);
   }
 
+  // orbital camera code taken from meshViewer 
   void computeCamPos(float r, float a, float e){
     camPos.x = r*cos(a)*cos(e);
     camPos.y = r*sin(e);

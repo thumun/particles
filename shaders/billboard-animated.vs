@@ -28,6 +28,7 @@ void main()
   //uv.x = (uv.x + col)/Cols; 
   //uv.y = (uv.y + row)/Rows; 
 
+  // accessing the correct part of sprite sheet using row, col calculation
   uv = vec2((vPosition.x + CurrCol)/Cols, (-vPosition.y - CurrRow)/Rows);
   
   vec3 z = normalize(CameraPos - Offset);
