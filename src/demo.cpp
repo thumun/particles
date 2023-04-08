@@ -1,7 +1,15 @@
 //--------------------------------------------------
 // Author: Neha Thumu
-// Date: 
+// Date: 4/7/23
 // Description: 
+// Creating fireworks particle effect!
+// [Using the code from sparkle-trail as a base]
+// Basically have 2 sets of particles: parents & childen 
+// the parents are the initial particles (firework going up)
+// children are the particles that happen after the blast (and parent joins 
+// in falling)
+// particles are recycled when there's no more particles that are visible 
+// not visible = size is <= 0 
 //--------------------------------------------------
 
 #include <cmath>
@@ -89,29 +97,13 @@ public:
     }
   }
 
-  void blastParticle(Particle parent){
-      for (Particle &child: parent.children){
-          child.pos = parent.pos;
-          child.isEnabled = true;
-      }
+  void blastParticle(Particle &parent){
+    for (Particle &child: parent.children){
+        child.pos = parent.pos;
+        child.isEnabled = true;
+    }
   }
 
-  // void createTrail(){
-
-  //   trailingParticles.clear();
-
-  //   for (int i = 0; i < sceneParticles.size(); i++){
-  //     Particle p1;
-  //     p1.color = sceneParticles[i].color;
-  //     p1.size = sceneParticles[i].size;
-  //     p1.pos = sceneParticles[i].pos; // need to change slightly
-  //     p1.vel = sceneParticles[i].vel;
-
-  //     trailingParticles.push_back(p1); // need to make more
-  //   }
-  // }
-
-  // testing initial firework -> no trail; just logic 
   void updateConfetti()
   {   
     time += dt();
