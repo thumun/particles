@@ -19,6 +19,9 @@ struct Particle {
   glm::vec4 color;
   float size;
   bool isEnabled; 
+  bool blasted;
+  float delayby;
+  float blasttime;
 };
 
 class Viewer : public Window {
@@ -28,30 +31,53 @@ public:
 
   void setup() {
     setWindowSize(1000, 1000);
-    createConfetti(100);
+    createConfetti();
     renderer.setDepthTest(false);
     renderer.blendMode(agl::ADD);
   }
 
-  void createConfetti(int size)
+  void initParticleList(){
+      mParticles.clear();
+      for (int i = 0; i < size; i++){
+          Particle particle;
+          particle.color = vec4(agl::randomUnitCube() + vec3(0.5), 1);
+          particle.size = 0.05;
+          float randVal = agl::random(-1.7, 1.7);
+          particle.pos = vec3(randVal, -1.7, 0);
+          if (particle.pos.x < 0)
+              particle.vel = vec3(0.3, 0.6, 0);
+          else
+              particle.vel = vec3(-0.3, 0.6, 0);
+
+          particle.isEnabled = false;
+          particle.blasted = false;
+          particle.delayby = i;
+          particle.blasttime = particle.delayby+3;
+          mParticles.push_back(particle);
+      }
+
+  }
+
+  void createConfetti()
   {
     renderer.loadTexture("particle", "../textures/circle.png", 0);
-    for (int i = 0; i < size; i++)
-    {
-      Particle particle;
-      particle.color = vec4(agl::randomUnitCube(), 1);
-      particle.size = 0.25;
-      // particle.pos = agl::randomUnitCube();
-      float randVal = agl::random(-1.5,1.5);
-      particle.pos = vec3(randVal, -1.6, 0);
-      // print start pos 
-      // cout << particle.pos << endl;
-      // make gravity 0 to see if moving correctly 
-      // particle.vel = agl::randomUnitCube();
-      particle.vel = vec3(0.1, agl::random(0.3,0.9), 0);
-      particle.isEnabled = false;
-      mParticles.push_back(particle);
-    }
+    initParticleList();
+   
+  }
+
+  void blastParticle(Particle parent){
+      for (int i = 0; i < 50; i++){
+          Particle particle;
+          particle.color = vec4(agl::randomUnitCube() + vec3(0.5), 1);
+          particle.size = 0.05;
+          particle.pos = parent.pos;
+          particle.vel = vec3(random(-0.3, 0.3), random(-0.3, 0.3), 0);
+          particle.isEnabled = true;
+          particle.blasted = true;
+          particle.delayby = 0;
+          particle.blasttime = 0;
+          mParticles.push_back(particle);
+      }
   }
 
   // void createTrail(){
@@ -72,12 +98,54 @@ public:
   // testing initial firework -> no trail; just logic 
   void updateConfetti()
   {   
+    time += dt();
+
+      bool allsizezero = true;
+      for (Particle& particle : mParticles) {
+          if (particle.isEnabled)
+          {
+              if (particle.blasted == false && time > particle.blasttime)
+              {
+                  particle.size = 0.05;
+                  particle.blasted = true;
+                  blastParticle(particle);
+                  return;
+              }
+
+              if (particle.blasted)
+              {
+                  particle.size -= 0.0005;
+              }
+              particle.pos += particle.vel * dt();
+              particle.vel += acceleration * dt();
+          }
+          else
+          {
+              if (time > particle.delayby)
+              {
+                  particle.isEnabled = true;
+              }
+          }
+          if (allsizezero && particle.size > 0)
+          {
+              allsizezero = false;
+          }
+      }
+
+      if (allsizezero)
+      {
+          initParticleList();
+          time = 0;
+      }
+
+      /*
     for (Particle &particle:mParticles){
       if (particle.isEnabled){
         particle.pos = particle.pos + dt() * particle.vel;
         particle.vel = particle.vel + acceleration*dt();
+        cout << particle.vel << endl;
 
-        if (pow(particle.vel.x,2)+ pow(particle.vel.y,2) + pow(particle.vel.z,2) < 0.05){
+        if (particle.vel.y < 0.05){
           particle.isEnabled = false; 
           cout << "particle false: " << particle.isEnabled << endl;
         }
@@ -86,23 +154,28 @@ public:
 
     if (time % 7 == 0){
       bool isDone = false;
-      for (Particle &i: mParticles){
+      for (Particle &particle: mParticles){
         if(isDone){
           break;
         }
-        else if (!i.isEnabled){
+        else if (!particle.isEnabled){
           float randVal = agl::random(-1.5,1.5);
-          i.pos = vec3(randVal, -1.6, 0);
-          i.vel = vec3(0.1, agl::random(0.3,0.9), 0);
-          i.color = vec4(agl::randomUnitCube(), 1);
-          i.isEnabled = true;
-          cout << "particle true: " <<  i.isEnabled << endl;
+          particle.pos = vec3(randVal, -1.6, 0);
+          particle.vel = vec3(0.1, agl::random(0.5,1.2), 0);
+          // i.color = vec4(agl::random(155, 255)/255, agl::random(155, 255)/255, agl::random(155, 255)/255, 1);
+          particle.color = vec4(agl::randomUnitCube(), 1);
+          particle.color.x = particle.color.x+0.5; 
+          particle.color.y = particle.color.y+0.5; 
+          particle.color.z = particle.color.z+0.5; 
+          particle.isEnabled = true;
+          cout << "particle true: " <<  particle.isEnabled << endl;
           isDone = true; 
         }
       }
     }
 
     time += 1; 
+    */
 
   }
 
@@ -111,8 +184,8 @@ public:
     renderer.texture("image", "particle");
 
     if (mParticles.size() != 0){
-      for (Particle particle : mParticles){
-        if (particle.isEnabled){
+      for (const Particle &particle : mParticles){
+        if (particle.isEnabled == true && particle.size > 0){
           renderer.sprite(particle.pos, particle.color, particle.size);
         }
       }
@@ -155,7 +228,9 @@ protected:
   vec3 up = vec3(0, 1, 0);
   vec3 position = vec3(1, 0, 0);
 
-  int time = 0; 
+  float time = 0; 
+
+  int size = 5;
 
   vec3 acceleration = vec3(0,-0.1,0); // gravity 
 
@@ -171,3 +246,4 @@ int main(int argc, char** argv)
   viewer.run();
   return 0;
 }
+
