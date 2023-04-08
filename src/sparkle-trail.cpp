@@ -1,6 +1,19 @@
 // Bryn Mawr College, alinen, 2020
 //
 
+//--------------------------------------------------
+// Authors: Aline Normoyle, Neha Thumu
+// Date: 4/7/23
+// Description:
+// Creating a trail of sparkles 
+// [Using code from Aline as a base]
+// Main particle rotates in a circle forever
+// trail of sparkles follow it 
+// these sparkles start off in same position as main but head off in their 
+// own directions with a bit of a spin & will fade away 
+// once faded -> they are recycled! 
+//--------------------------------------------------
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -30,6 +43,7 @@ public:
     renderer.blendMode(agl::ADD);
   }
 
+  // setting up the confetti & initial vals  
   void createConfetti(int size)
   {
     renderer.loadTexture("particle", "../textures/star4.png", 0);
@@ -54,14 +68,15 @@ public:
       // initialized to be same start pos as the rotating particle 
       sceneParticles[sceneParticles.size()-1].pos = position; 
       // resetting to orig values 
-      sceneParticles[sceneParticles.size()-1].color = vec4(agl::randomUnitCube(), 1);
+      sceneParticles[sceneParticles.size()-1].color = 
+                                            vec4(agl::randomUnitCube(), 1);
       sceneParticles[sceneParticles.size()-1].rot = 0.0;
     }
  
     if (sceneParticles.size() > 1){
       for (int i = 0; i < sceneParticles.size()-2; i++){
         Particle* particle = &sceneParticles[i];
-        // hopefully it shoots off in a straight line (?)
+        // hopefully it shoots off in a straight line 
         particle->pos = particle->pos + dt() * particle->vel;
         // lowers the transparency based on time 
         particle->color.w = fmaxf(0, particle->color.w-0.005);
@@ -77,12 +92,14 @@ public:
       }
     }
     
+    // logic for recycling (moving from scene back to mParticles)
     if (deadParticles.size() != 0){
       for (int i: deadParticles){
         mParticles.push_back(sceneParticles[i]);
         sceneParticles.erase(sceneParticles.begin() + i);
       }
 
+      // then indicies cleared 
       deadParticles.clear();
     }
 
@@ -96,7 +113,8 @@ public:
 
     if (sceneParticles.size() != 0){
       for (Particle particle : sceneParticles){
-        renderer.sprite(particle.pos, particle.color, particle.size, particle.rot);
+        renderer.sprite(particle.pos, particle.color, particle.size, 
+                          particle.rot);
       }
     }
 
@@ -125,6 +143,8 @@ public:
     renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
 
     renderer.lookAt(eyePos, lookPos, up);
+    // the "main sparkle" -- rotating in a circle 
+    // rotates based on a theta that is incremented each frame
     position = vec3(cos(theta), sin(theta), position.z);
     theta = theta+0.01; 
     renderer.sprite(position, vec4(1.0f), 0.25f);
