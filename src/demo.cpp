@@ -21,7 +21,7 @@ struct Particle {
   bool isEnabled; 
   bool blasted;
   float delayby;
-  float blasttime;
+  std::vector<Particle> children;
 };
 
 class Viewer : public Window {
@@ -31,14 +31,15 @@ public:
 
   void setup() {
     setWindowSize(1000, 1000);
-    createConfetti();
+    createConfetti(5);
     renderer.setDepthTest(false);
     renderer.blendMode(agl::ADD);
   }
 
-  void initParticleList(){
-      mParticles.clear();
-      for (int i = 0; i < size; i++){
+  void createConfetti(int size)
+  {
+    renderer.loadTexture("particle", "../textures/circle.png", 0);
+     for (int i = 0; i < size; i++){
           Particle particle;
           particle.color = vec4(agl::randomUnitCube() + vec3(0.5), 1);
           particle.size = 0.05;
@@ -52,31 +53,46 @@ public:
           particle.isEnabled = false;
           particle.blasted = false;
           particle.delayby = i;
-          particle.blasttime = particle.delayby+3;
+          for (int j = 0; j < 50; j++){
+            Particle child;
+            child.color = vec4(agl::randomUnitCube() + vec3(0.5), 1);
+            child.size = 0.05;
+            child.pos = vec3(0);
+            child.vel = vec3(random(-0.3, 0.3), random(-0.3, 0.3), 0);
+            child.isEnabled = false;
+            child.blasted = true;
+            child.delayby = 0;
+            particle.children.push_back(child);
+          }
           mParticles.push_back(particle);
       }
-
   }
 
-  void createConfetti()
-  {
-    renderer.loadTexture("particle", "../textures/circle.png", 0);
-    initParticleList();
-   
+  void resetParticles(){
+    for (Particle& particle : mParticles){
+      particle.size = 0.05;
+      float randVal = agl::random(-1.7, 1.7);
+      particle.pos = vec3(randVal, -1.7, 0);
+      if (particle.pos.x < 0)
+          particle.vel = vec3(0.3, 0.6, 0);
+      else
+          particle.vel = vec3(-0.3, 0.6, 0);
+
+      particle.isEnabled = false;
+      particle.blasted = false;
+      for (Particle &child: particle.children){
+        child.size = 0.05;
+        child.vel = vec3(random(-0.3, 0.3), random(-0.3, 0.3), 0);
+        child.isEnabled = false;
+        child.blasted = true;
+      }
+    }
   }
 
   void blastParticle(Particle parent){
-      for (int i = 0; i < 50; i++){
-          Particle particle;
-          particle.color = vec4(agl::randomUnitCube() + vec3(0.5), 1);
-          particle.size = 0.05;
-          particle.pos = parent.pos;
-          particle.vel = vec3(random(-0.3, 0.3), random(-0.3, 0.3), 0);
-          particle.isEnabled = true;
-          particle.blasted = true;
-          particle.delayby = 0;
-          particle.blasttime = 0;
-          mParticles.push_back(particle);
+      for (Particle &child: parent.children){
+          child.pos = parent.pos;
+          child.isEnabled = true;
       }
   }
 
@@ -104,7 +120,7 @@ public:
       for (Particle& particle : mParticles) {
           if (particle.isEnabled)
           {
-              if (particle.blasted == false && time > particle.blasttime)
+              if (particle.blasted == false && particle.vel.y <= 0.1)
               {
                   particle.size = 0.05;
                   particle.blasted = true;
@@ -115,6 +131,16 @@ public:
               if (particle.blasted)
               {
                   particle.size -= 0.0005;
+                  for (Particle& child: particle.children){
+                    child.pos += child.vel * dt();
+                    child.vel += acceleration * dt();
+                    child.size -= 0.0005;
+
+                    if (allsizezero && child.size > 0)
+                    {
+                        allsizezero = false;
+                    }
+                  }
               }
               particle.pos += particle.vel * dt();
               particle.vel += acceleration * dt();
@@ -132,50 +158,10 @@ public:
           }
       }
 
-      if (allsizezero)
-      {
-          initParticleList();
+      if (allsizezero){
+          resetParticles();
           time = 0;
       }
-
-      /*
-    for (Particle &particle:mParticles){
-      if (particle.isEnabled){
-        particle.pos = particle.pos + dt() * particle.vel;
-        particle.vel = particle.vel + acceleration*dt();
-        cout << particle.vel << endl;
-
-        if (particle.vel.y < 0.05){
-          particle.isEnabled = false; 
-          cout << "particle false: " << particle.isEnabled << endl;
-        }
-      }
-    }
-
-    if (time % 7 == 0){
-      bool isDone = false;
-      for (Particle &particle: mParticles){
-        if(isDone){
-          break;
-        }
-        else if (!particle.isEnabled){
-          float randVal = agl::random(-1.5,1.5);
-          particle.pos = vec3(randVal, -1.6, 0);
-          particle.vel = vec3(0.1, agl::random(0.5,1.2), 0);
-          // i.color = vec4(agl::random(155, 255)/255, agl::random(155, 255)/255, agl::random(155, 255)/255, 1);
-          particle.color = vec4(agl::randomUnitCube(), 1);
-          particle.color.x = particle.color.x+0.5; 
-          particle.color.y = particle.color.y+0.5; 
-          particle.color.z = particle.color.z+0.5; 
-          particle.isEnabled = true;
-          cout << "particle true: " <<  particle.isEnabled << endl;
-          isDone = true; 
-        }
-      }
-    }
-
-    time += 1; 
-    */
 
   }
 
@@ -184,9 +170,14 @@ public:
     renderer.texture("image", "particle");
 
     if (mParticles.size() != 0){
-      for (const Particle &particle : mParticles){
+      for (Particle &particle : mParticles){
         if (particle.isEnabled == true && particle.size > 0){
           renderer.sprite(particle.pos, particle.color, particle.size);
+          for (Particle &child: particle.children){
+            if (child.isEnabled == true && child.size > 0){
+              renderer.sprite(child.pos, child.color, child.size);
+            }
+          }
         }
       }
     }
@@ -229,8 +220,6 @@ protected:
   vec3 position = vec3(1, 0, 0);
 
   float time = 0; 
-
-  int size = 5;
 
   vec3 acceleration = vec3(0,-0.1,0); // gravity 
 
