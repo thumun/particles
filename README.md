@@ -50,7 +50,7 @@ particles/build $ ../bin/explosion
 ## Demo of basic features
 
 Sparkle-Trail:
-![sparkle trail](https://github.com/thumun/particles/blob/main/img/particles.gif)
+![sparkle trail](https://github.com/thumun/particles/blob/main/img/sparkle%20trail.gif)
 
 Explosion:
 ![explosion](https://github.com/thumun/particles/blob/main/img/explosion.gif)
